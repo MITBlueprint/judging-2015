@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blueprint Judging System</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>Judging little kids</h1>
+    <form action="/" method="POST">
+			<input type="text" name="name" placeholder="round name">
+			<br>
+			<input type="text" name="numTeams" placeholder="number of teams">
+			<br>
+			<input type="text" name="numJudges" placeholder="number of judges">
+			<br>
+			<input type="text" name="numPeriods" placeholder="number of periods">
+			<br>
+			<input type="submit" value="Submit">
+		</form>
+    <% for (var i = 0; i < rounds.length; i++) { %>
+    	<p>
+    		Name: <%= rounds[i].name %><br>
+    		Number of teams: <%= rounds[i].numTeams %><br>
+    		Number of judges: <%= rounds[i].numJudges %><br>
+    		Number of judging periods: <%= rounds[i].numPeriods %><br>
+            Current judging period: <%= rounds[i].currentPeriod %><br>
+    		<a href = "/<%= rounds[i].id %>">View votes</a>
+    		<% if (rounds[i].active) { %>
+    			ACTIVE
+    		<% } %>
+    	</p>
+    <% } %>
+  </body>
+</html>

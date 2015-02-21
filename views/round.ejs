@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blueprint Judging System</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+    <script src="/javascripts/round.js"></script>
+  </head>
+  <body>
+    <h1>Round <%= round.name %></h1>
+    <% if (round.active) { %>
+      <h2 id="active-status">ACTIVE</h2>
+      <button id="active-button" class="make-inactive-btn" data="<%=round.id%>">Make inactive</button>
+    <% } else { %>
+      <h2 id="active-status">INACTIVE</h2>
+      <button id="active-button" class="make-active-btn" data="<%=round.id%>">Make active</button>
+    <% } %>
+    <br>Judging period: <span id="round-count"><%= round.currentPeriod %></span><br>
+    <button id="advance-round-button" data="<%=round.id%>">Next judging period</button><br>
+    <% for (var i = 0; i < round.votes.length; i++) { %>
+    	<p>
+    		Team A: <%= round.votes[i].teamA %><br>
+    		Team B: <%= round.votes[i].teamB %><br>
+    		Better? <%= round.votes[i].better %>
+    	</p>
+    <% } %>
+  </body>
+</html>
