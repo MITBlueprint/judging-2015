@@ -49,18 +49,14 @@ var sendMessage = function(number, body) {
 var updateRoundStatus = function(roundID, updates, done) {
 	var status = updates.state
 	if (status == "active") {
-		Round.update({"_id": roundID}, { $set: {active: true}}, {upsert: false}, function(err) {
-			if (err) {
-				done(err);
-			} else {
-				Round.update({"_id": {"$ne" : roundID}}, { $set: {active: false}}, {upsert: false}, function(err) {
-					if (err) {
-						done(err);
-					} else {
-						done(null)
-					}
-				});
-			}
+		Round.update({active: true}, { $set: {active: false}}, {upsert: false}, function(err) {
+			Round.update({"_id": roundID}, { $set: {active: true}}, {upsert: false}, function(err) {
+				if (err) {
+					done(err);
+				} else {
+					done(null)
+				}
+			});
 		});
 	} else if (status == "inactive") {
 		Round.update({"_id": roundID}, { $set: {active: false}}, {upsert: false}, function(err) {
@@ -76,32 +72,62 @@ var updateRoundStatus = function(roundID, updates, done) {
 			if (err) {
 				done(err);
 			} else {
-				judgingPeriodStarts(updates.count);
-			}
+				judgingPeriodStarts(updates.count, roundID);
+			}  
 		});
 	}
 	done(null);
 }
 
-var judgingPeriodStarts = function(period) {
-	var teamNum = "1";
+var judgingPeriodStarts = function(period, roundID) {
+	var teamNum;
 	getAllUsers(function(err, allUsers) {
-		for (var i = 0; i < allUsers.length; i++) {
-			var prevAssign = allUsers[i].currentAssignment;
-			var number = allUsers[i].number;
-			var userID = allUsers[i].id;
-			User.update({"_id": userID}, {$set: {currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
-				if (!err) {
-					if (prevAssign) {
-						User.update({"_id": userID}, {$set: {previousAssignment: prevAssign}}, {upsert: false}, function(err) {
-							sendMessage(number, "Judging round " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
-						});
+		getRound(roundID, function(err, round) {
+			var clone = round.remaining.slice(0);
+			queue = [];
+			for (var j = 0; j < allUsers.length; j++) {
+				if (clone.length > 0) {
+					var index = Math.floor(Math.random()*clone.length) // random
+					queue.push(clone.splice(index, 1));
+				}
+			}
+			// update round with new queue
+			round.update({ $set: {remaining: clone}}, {upsert: false}, function(err) {
+				for (var i = 0; i < allUsers.length; i++) {
+					var prevAssign = allUsers[i].currentAssignment;
+					var number = allUsers[i].number;
+					var userID = allUsers[i].id;
+					if (prevAssign && parseInt(period) > 1) {
+						var x = 0;
+						while (queue[x] == prevAssign && x < queue.length) {
+							x = x + 1;
+						}
+						if (x < queue.length) {
+							var teamNum = queue[x]
+							queue.splice(0, 1);
+							updateAndSendAssignmentPrev(userID, prevAssign, teamNum, number, period);
+						}
 					} else {
-						sendMessage(number, "Judging round " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
+						var teamNum = queue.splice(0, 1);
+						updateAndSendAssignment(userID, teamNum, number, period);
 					}
 				}
 			});
-		} 
+		});
+	});
+}
+
+var updateAndSendAssignmentPrev = function(userID, prevAssign, teamNum, number, period) {
+	User.update({"_id": userID}, {$set: {previousAssignment: prevAssign, currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
+		console.log("assigning new team to " + number);
+		sendMessage(number, "Judging period " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
+	});
+}
+
+var updateAndSendAssignment = function(userID, teamNum, number, period) {
+	User.update({"_id": userID}, {$set: {previousAssignment: null, currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
+		console.log("assigning new team to " + number);
+		sendMessage(number, "Judging period " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
 	});
 }
 
@@ -110,7 +136,7 @@ router.get('/', function(req, res) {
 		if (!err) {
 			res.render('index.ejs', {
 				rounds: allRounds
-			}); 
+			});
 		} else {
 			console.log("error: " + str(err));
 		}
@@ -118,9 +144,23 @@ router.get('/', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-	var round = new Round({name: req.body.name, numTeams: req.body.numTeams, numJudges: req.body.numJudges, numPeriods: req.body.numPeriods, currentPeriod: 0});
-	round.save();
-	res.redirect("/");
+	getAllUsers(function(err, allUsers) {
+		// generate team array
+		var numViews = parseInt(allUsers.length * req.body.numPeriods);
+		console.log(typeof(req.body.teams));
+		var roundTeams = req.body.teams.split(",");
+		var teamMax = roundTeams.length;
+		var teamIndex = 0;
+		var queue = [];
+		for (var i = 0; i < numViews; i++) {
+			queue.push(roundTeams[teamIndex]);
+			teamIndex = (teamIndex + 1)%teamMax; 
+		}
+		// create round
+		var round = new Round({name: req.body.name, teams: roundTeams, numJudges: allUsers.length, numPeriods: req.body.numPeriods, currentPeriod: 0, remaining: queue});
+		round.save();
+		res.redirect("/");
+	});
 });
 
 router.get('/:id', function(req, res) {

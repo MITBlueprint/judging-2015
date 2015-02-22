@@ -15,13 +15,13 @@
       <h2 id="active-status">INACTIVE</h2>
       <button id="active-button" class="make-active-btn" data="<%=round.id%>">Make active</button>
     <% } %>
-    <br>Judging period: <span id="round-count"><%= round.currentPeriod %></span><br>
-    <button id="advance-round-button" data="<%=round.id%>">Next judging period</button><br>
+    <br>Judging period: <span id="round-count"><%= round.currentPeriod %></span>/<span id="total-round-count"><%= round.numPeriods %></span><br>
+    <% if (round.currentPeriod < round.numPeriods) { %>
+      <button id="advance-round-button" data="<%=round.id%>">Next judging period</button><br>
+    <% } %>
     <% for (var i = 0; i < round.votes.length; i++) { %>
     	<p>
-    		Team A: <%= round.votes[i].teamA %><br>
-    		Team B: <%= round.votes[i].teamB %><br>
-    		Better? <%= round.votes[i].better %>
+    		<%= round.votes[i].teamA %> <%= round.votes[i].teamB %> <%= round.votes[i].better %>
     	</p>
     <% } %>
   </body>

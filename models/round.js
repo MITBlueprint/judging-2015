@@ -8,12 +8,13 @@ var vote = mongoose.Schema({
 
 var roundSchema = mongoose.Schema({
 	name : String,
-    numTeams: Number,
+    teams: [String],
     numJudges: Number,
     numPeriods: Number,
     currentPeriod: Number,
     active: Boolean,
-    votes: [vote]
+    votes: [vote],
+    remaining: [String]
 });
 
 module.exports = mongoose.model('Round', roundSchema);

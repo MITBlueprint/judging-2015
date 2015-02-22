@@ -32,7 +32,10 @@ $(document).ready(function() {
 		  count: nCount
 		},
 		function(data, status){
-		$("#round-count").html(nCount.toString());
+			if (nCount == parseInt($("#total-round-count").text())) {
+				$("#advance-round-button").remove();
+			}
+			$("#round-count").html(nCount.toString());
 		});
 	});
 });

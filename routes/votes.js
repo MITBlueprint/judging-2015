@@ -48,14 +48,14 @@ router.post('/', function(req, res) {
 			if (!err) {
 				if (user.currentAssignment) {
 					if (!user.done && voteVal.toLowerCase().indexOf("done") != -1) {
-						user.update({$set: {done: true}}, {upsert: false}, function(err) {
+						user.update({$set: {done: true, voted: false}}, {upsert: false}, function(err) {
 							if (!user.previousAssignment) {
 								sendMessage(voteFrom, "Awesome :)");
 							} else {
 								sendMessage(voteFrom, "Awesome. In your opinion, was this project more or less impressive than the last project you judged? Text back \"more\" or \"less\".");
 							}
 						});
-					} else if (user.done && !user.voted && (voteVal.toLowerCase() == "more" || voteVal.toLowerCase() == "less")) {
+					} else if (user.done && !user.voted && (voteVal.toLowerCase().indexOf("more") != -1 || voteVal.toLowerCase().indexOf("less") != -1)) {
 						var vote = {};
 						if (voteVal.toLowerCase().indexOf("more") != -1 && user.previousAssignment) {
 							vote = {teamA: user.previousAssignment, teamB: user.currentAssignment, better: true};
