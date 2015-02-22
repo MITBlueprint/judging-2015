@@ -46,9 +46,12 @@ router.post('/', function(req, res) {
 	getCurrentRound(function(err, round) {
 		getUserByNumber(voteFrom, function(err, user) {
 			if (!err) {
+				console.log("received text from " + voteFrom);
 				if (user.currentAssignment) {
+					console.log("user judged " + user.currentAssignment);
 					if (!user.done && voteVal.toLowerCase().indexOf("done") != -1) {
 						user.update({$set: {done: true, voted: false}}, {upsert: false}, function(err) {
+							console.log("successfully updated!");
 							if (!user.previousAssignment) {
 								sendMessage(voteFrom, "Awesome :)");
 							} else {
