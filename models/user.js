@@ -6,7 +6,8 @@ var userSchema = mongoose.Schema({
     previousAssignment : String,
     currentAssignment : String,
     done : Boolean,
-    voted : Boolean
+    voted : Boolean,
+    judged : [String]
 });
 
 module.exports = mongoose.model('User', userSchema);

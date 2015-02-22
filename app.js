@@ -14,7 +14,7 @@ var app = express();
 
 var mongoose = require('mongoose');
 var uriUtil = require('mongodb-uri');
-console.log("asdfasdf" + app.get('env'));
+
 if (app.get('env') === 'development') {
     mongoose.connect('mongodb://localhost/test');
 } else {

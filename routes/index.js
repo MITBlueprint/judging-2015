@@ -99,12 +99,11 @@ var judgingPeriodStarts = function(period, roundID) {
 					var userID = allUsers[i].id;
 					if (prevAssign && parseInt(period) > 1) {
 						var x = 0;
-						while (queue[x] == prevAssign && x < queue.length) {
+						while ((queue[x] == prevAssign || allUsers[i].judged.indexOf(queue[x]) != -1) && x < queue.length) {
 							x = x + 1;
 						}
 						if (x < queue.length) {
-							var teamNum = queue[x]
-							queue.splice(0, 1);
+							var teamNum = queue.splice(x, 1);
 							updateAndSendAssignmentPrev(userID, prevAssign, teamNum, number, period);
 						}
 					} else {
@@ -118,14 +117,14 @@ var judgingPeriodStarts = function(period, roundID) {
 }
 
 var updateAndSendAssignmentPrev = function(userID, prevAssign, teamNum, number, period) {
-	User.update({"_id": userID}, {$set: {previousAssignment: prevAssign, currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
+	User.update({"_id": userID}, {$set: {previousAssignment: prevAssign, currentAssignment: teamNum, done: false, voted: false}, $push: { judged: teamNum }}, {upsert: false}, function(err) {
 		console.log("assigning new team to " + number);
 		sendMessage(number, "Judging period " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
 	});
 }
 
 var updateAndSendAssignment = function(userID, teamNum, number, period) {
-	User.update({"_id": userID}, {$set: {previousAssignment: null, currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
+	User.update({"_id": userID}, {$set: {previousAssignment: null, currentAssignment: teamNum, done: false, voted: false, judged: [teamNum] }}, {upsert: false}, function(err) {
 		console.log("assigning new team to " + number);
 		sendMessage(number, "Judging period " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
 	});
