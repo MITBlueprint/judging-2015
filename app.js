@@ -13,23 +13,23 @@ var votes = require('./routes/votes');
 var app = express();
 
 var mongoose = require('mongoose');
-// var uriUtil = require('mongodb-uri');
+var uriUtil = require('mongodb-uri');
 
 if (app.get('env') === 'development') {
     mongoose.connect('mongodb://localhost/test');
-} // else {
-//     var options = { server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }, 
-//                 replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } };  
+} else {
+    var options = { server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }, 
+                replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } };  
 
-//     var mongodbUri = 'mongodb://heroku_app30342882:5s9tiieuj7j6iffv3hd1d6t6sg@ds043180.mongolab.com:43180/heroku_app30342882';
-//     var mongooseUri = uriUtil.formatMongoose(mongodbUri);
+    var mongodbUri = 'mongodb://heroku_app34247176:r68hl2f87dcjdqid2cq45g3ksu@ds047591.mongolab.com:47591/heroku_app34247176';
+    var mongooseUri = uriUtil.formatMongoose(mongodbUri);
 
-//     mongoose.connect(mongooseUri, options);
+    mongoose.connect(mongooseUri, options);
 
-//     var db = mongoose.connection;
+    var db = mongoose.connection;
 
-//     db.on('error', console.error.bind(console, 'connection error:'));
-// }
+    db.on('error', console.error.bind(console, 'connection error:'));
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
