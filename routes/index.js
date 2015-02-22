@@ -36,6 +36,16 @@ var getRound = function(roundID, done) {
 	})
 }
 
+var sendMessage = function(number, body) {
+	client.messages.create({
+    body: body,
+    to: number,
+    from: "+16179348497"
+	}, function(err, message) {
+    process.stdout.write(message.sid);
+	});
+}
+
 var updateRoundStatus = function(roundID, updates, done) {
 	var status = updates.state
 	if (status == "active") {
@@ -67,7 +77,6 @@ var updateRoundStatus = function(roundID, updates, done) {
 				done(err);
 			} else {
 				judgingPeriodStarts(updates.count);
-				done(null);
 			}
 		});
 	}
@@ -75,15 +84,22 @@ var updateRoundStatus = function(roundID, updates, done) {
 }
 
 var judgingPeriodStarts = function(period) {
-	var teamNum = "A";
+	var teamNum = "1";
 	getAllUsers(function(err, allUsers) {
 		for (var i = 0; i < allUsers.length; i++) {
-			client.messages.create({
-		    body: "Judging round " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.",
-		    to: allUsers[i].number,
-		    from: "+16179348497"
-			}, function(err, message) {
-			    process.stdout.write(message.sid);
+			var prevAssign = allUsers[i].currentAssignment;
+			var number = allUsers[i].number;
+			var userID = allUsers[i].id;
+			User.update({"_id": userID}, {$set: {currentAssignment: teamNum, done: false, voted: false}}, {upsert: false}, function(err) {
+				if (!err) {
+					if (prevAssign) {
+						User.update({"_id": userID}, {$set: {previousAssignment: prevAssign}}, {upsert: false}, function(err) {
+							sendMessage(number, "Judging round " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
+						});
+					} else {
+						sendMessage(number, "Judging round " + period.toString() + " has begun. Please listen to team " + teamNum + " present and text \"Done\" when you have finished.");
+					}
+				}
 			});
 		} 
 	});
