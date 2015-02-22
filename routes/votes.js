@@ -41,12 +41,11 @@ var sendMessage = function(number, body) {
 router.post('/', function(req, res) {
 	var voteVal = req.body.Body;
 	var voteFrom = req.body.From;
-
 	getCurrentRound(function(err, round) {
 		getUserByNumber(voteFrom, function(err, user) {
 			if (!err) {
 				if (user.currentAssignment) {
-					if (!user.done && voteVal.toLowerCase() == "done") {
+					if (!user.done && voteVal.toLowerCase().indexOf("done") != -1) {
 						user.update({$set: {done: true}}, {upsert: false}, function(err) {
 							if (!user.previousAssignment) {
 								sendMessage(voteFrom, "Awesome :)");
@@ -56,9 +55,9 @@ router.post('/', function(req, res) {
 						});
 					} else if (user.done && !user.voted && (voteVal.toLowerCase() == "more" || voteVal.toLowerCase() == "less")) {
 						var vote = {};
-						if (voteVal.toLowerCase() == "more" && user.previousAssignment) {
+						if (voteVal.toLowerCase().indexOf("more") != -1 && user.previousAssignment) {
 							vote = {teamA: user.previousAssignment, teamB: user.currentAssignment, better: true};
-						} else if (voteVal.toLowerCase() == "less" && user.previousAssignment) {
+						} else if (voteVal.toLowerCase().indexOf("less") != -1 && user.previousAssignment) {
 							vote = {teamA: user.previousAssignment, teamB: user.currentAssignment, better: false};
 						}
 						user.update({$set: {voted: true}}, {upsert: false}, function(err) {
