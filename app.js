@@ -19,7 +19,7 @@ if (app.get('env') === 'development') {
     mongoose.connect('mongodb://localhost/test');
 } else {
     var options = { server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }, 
-                replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } };  
+                replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } };   
 
     var mongodbUri = 'mongodb://heroku_app34247993:puulgueuh8i92ufsn0bjq8lh7m@ds047581.mongolab.com:47581/heroku_app34247993';
     var mongooseUri = uriUtil.formatMongoose(mongodbUri);
