@@ -38,6 +38,8 @@ var sendMessage = function(number, body) {
 	});
 }
 
+
+// don't judge me for this method pls pls pls
 router.post('/', function(req, res) {
 	var voteVal = req.body.Body;
 	var voteFrom = req.body.From;
