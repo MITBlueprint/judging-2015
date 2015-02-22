@@ -32,7 +32,7 @@ var sendMessage = function(number, body) {
 	client.messages.create({
     body: body,
     to: number,
-    from: "+16179348497"
+    from: "+16179348695"
 	}, function(err, message) {
     process.stdout.write(message.sid);
 	});
